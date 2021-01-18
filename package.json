@@ -1,0 +1,22 @@
+{
+  "name": "wilmaplus-web-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "node main.js",
+    "cache-server": "node handlers/servers_cron.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dateformat": "^4.4.1",
+    "express": "^4.17.1",
+    "needle": "^2.6.0",
+    "valid-url": "^1.0.9"
+  }
+}
