@@ -21,7 +21,7 @@ function schedule(req, res) {
                 return;
             }
 
-            if (start.length > 12) {
+            if (start.length > 64) {
                 resUtils.responseStatus(res, 400, false, {cause: 'start date is too long!'});
                 return;
             }
@@ -30,7 +30,7 @@ function schedule(req, res) {
                 return;
             }
 
-            if (end.length > 12) {
+            if (end.length > 64) {
                 resUtils.responseStatus(res, 400, false, {cause: 'end date is too long!'});
                 return;
             }
