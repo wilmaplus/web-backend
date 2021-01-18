@@ -12,4 +12,4 @@ Wilma Plus Web's backend for communicating with Wilma API
 
 ## Reason of making this backend
 Visma has CORS issues with Wilma, and requests don't work from browser to Wilma directly. That's why.
-When they'll fix their CORS issues, this backend wouldn't handle any confidential information, only API key generation.
+When they'll fix their CORS issues, this backend wouldn't handle any confidential information, only API key generation and Wilma Plus' special features.
