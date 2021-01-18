@@ -9,3 +9,7 @@ Wilma Plus Web's backend for communicating with Wilma API
 2. Create server list cache with command `npm run cache-server`
 
 3. Start webserver with command `npm run server`, which should start an http server on default port 3000. (Set your custom port with env variable `PORT`).
+
+## Reason of making this backend
+Visma has CORS issues with Wilma, and requests don't work from browser to Wilma directly. That's why.
+When they'll fix their CORS issues, this backend wouldn't handle any confidential information, only API key generation.
