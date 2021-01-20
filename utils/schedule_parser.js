@@ -146,6 +146,7 @@ function parse(date, schedule) {
         }
         // Getting date
         let correctedDate = new Date(monday.getTime()).addDays(currentDay);
+        correctedDate.setUTCHours(0, 0, 0,0);
         let restructuredReservation = restructure(correctedDate, scheduleReservation);
         if (reservationMap.has(correctedDate.getTime())) {
             let array = reservationMap.get(correctedDate.getTime());
@@ -160,7 +161,10 @@ function parse(date, schedule) {
     // Creating final object
     let days = [];
     reservationMap.forEach(function (value, key) {
-        days.push({date: new Date(key), reservations: value});
+        let tStamp = new Date(key);
+        // Setting time to midnight
+        tStamp.setUTCHours(0, 0, 0,0);
+        days.push({date: tStamp, reservations: value});
     });
     // Sorting
     days = days.sort((a, b) => a.date - b.date);
