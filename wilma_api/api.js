@@ -49,6 +49,30 @@ function homepage(session, serverUrl, error, response) {
     });
 }
 
+function messages(session, serverUrl, error, response) {
+    serverUrl = correctAddress(serverUrl);
+    needle.get(serverUrl+'messages/index_json', {cookies: {'Wilma2SID': session}}, function (err, resp) {
+        if (err) {
+            console.error(err);
+            error(err);
+            return;
+        }
+        response(resp.body);
+    });
+}
+
+function message(session, serverUrl, param, error, response) {
+    serverUrl = correctAddress(serverUrl);
+    needle.get(serverUrl+'messages/index_json/'+param, {cookies: {'Wilma2SID': session}}, function (err, resp) {
+        if (err) {
+            console.error(err);
+            error(err);
+            return;
+        }
+        response(resp.body);
+    });
+}
+
 function schedule(session, serverUrl, error, response) {
     serverUrl = correctAddress(serverUrl);
     let date = dateFormat(new Date(), 'dd.mm.yyyy');
@@ -86,5 +110,7 @@ module.exports = {
     login,
     homepage,
     schedule,
-    scheduleWithDate
+    scheduleWithDate,
+    messages,
+    message
 }

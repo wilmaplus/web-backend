@@ -5,10 +5,12 @@ const port = process.env.PORT || 3000;
 const serversHandler = require('./handlers/servers')
 const login = require('./handlers/login/login')
 const homepage = require('./handlers/homepage/get')
+const messages = require('./handlers/messages/list')
 const schedule = require('./handlers/schedule/get')
 const weekSchedule = require('./handlers/schedule/week')
 const rangeSchedule = require('./handlers/schedule/range')
 const cors = require('cors');
+const {updateServerList} = require("./handlers/servers_updater");
 
 app = express();
 app.use(bodyParser.json());
@@ -27,6 +29,15 @@ app.route('/api/v1/login')
 app.route('/api/v1/homepage')
     .post(homepage.homepage)
 
+app.route('/api/v1/messages')
+    .post(messages.list)
+
+app.route('/api/v1/messages/id/:id(\\d+)')
+    .post(messages.get)
+
+app.route('/api/v1/messages/:folder([a-z]+)')
+    .post(messages.folder)
+
 app.route('/api/v1/schedule')
     .post(schedule.schedule)
 
@@ -41,6 +52,10 @@ app.route('/api/v1/schedule/range/')
 app.get('*', function(req, res){
     res.status(404).json({'status': false, 'cause': "not found"});
 });
+
+setInterval(() => {
+    updateServerList();
+}, 30000);
 
 app.listen(port);
 console.log("Listening on port "+port);

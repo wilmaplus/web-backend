@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "node main.js",
-    "cache-server": "node handlers/servers_cron.js"
+    "cache-server": "node handlers/servers_updater.js"
   },
   "keywords": [],
   "author": "",
