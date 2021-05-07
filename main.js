@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const port = process.env.PORT || 3000;
 const serversHandler = require('./handlers/servers')
 const login = require('./handlers/login/login')
+const otp = require('./handlers/login/otp')
 const homepage = require('./handlers/homepage/get')
 const messages = require('./handlers/messages/list')
 const schedule = require('./handlers/schedule/get')
@@ -11,10 +12,12 @@ const weekSchedule = require('./handlers/schedule/week')
 const rangeSchedule = require('./handlers/schedule/range')
 const cors = require('cors');
 const {updateServerList} = require("./handlers/servers_updater");
+const useragent = require('express-useragent');
 
 app = express();
 app.use(bodyParser.json());
 app.use(cors());
+app.use(useragent.express());
 
 global.config = config;
 
@@ -22,6 +25,9 @@ global.config = config;
 
 app.route('/api/v1/servers')
     .get(serversHandler.serversHandler);
+
+app.route('/api/v1/login/otp')
+    .post(otp.applyOtp)
 
 app.route('/api/v1/login')
     .post(login.signIn)

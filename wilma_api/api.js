@@ -3,7 +3,7 @@ let dateFormat = require('dateformat');
 
 function login(serverUrl, username, password, loginId, apiKey, error, response) {
     serverUrl = correctAddress(serverUrl);
-    needle.post(serverUrl+'index_json', {'Login': username, 'Password': password, 'SESSIONID': loginId,
+    needle.post(serverUrl+'login', {'Login': username, 'Password': password, 'SESSIONID': loginId,
         'ApiKey': apiKey, 'CompleteJson': '', 'format': 'json'}, {multipart: true, follow: 5}, function (err, resp) {
         try {
             if (err) {
@@ -37,9 +37,27 @@ function login(serverUrl, username, password, loginId, apiKey, error, response) 
     })
 }
 
+function parseSession(session) {
+    if (session === undefined || session == null)
+        return null;
+    let sessionSplit = session.split("&MFA=");
+    return (sessionSplit.length > 1) ? sessionSplit : [session];
+}
+
+function constructCorrectCookies(session) {
+    let cookieObject = {};
+    let parsedSession = parseSession(session);
+    if (parsedSession !== null) {
+        cookieObject['Wilma2SID'] = parsedSession[0];
+        if (parsedSession.length > 1)
+            cookieObject['Wilma2MFASID'] = parsedSession[1];
+    }
+    return cookieObject;
+}
+
 function homepage(session, serverUrl, error, response) {
     serverUrl = correctAddress(serverUrl);
-    needle.get(serverUrl+'index_json', {cookies: {'Wilma2SID': session}}, function (err, resp) {
+    needle.get(serverUrl+'index_json', {cookies: constructCorrectCookies(session)}, function (err, resp) {
         if (err) {
             console.error(err);
             error(err);
@@ -49,9 +67,40 @@ function homepage(session, serverUrl, error, response) {
     });
 }
 
+function extractMFAToken(cookie) {
+    let regex = /^(.*)Wilma2MFASID=([^;]+)(.*)$/;
+    let results = regex.exec(cookie);
+    if (results != null && results.length > 2) {
+        return results[2];
+    }
+    return cookie;
+}
+
+function applyOTP(session, otpCode, formKey, sessionName, serverUrl, error, response) {
+    serverUrl = correctAddress(serverUrl);
+    needle.post(serverUrl+'api/v1/accounts/me/mfa/otp/check', {formkey: formKey, payload: JSON.stringify({otp: otpCode, sessionName})}, {cookies: constructCorrectCookies(session)}, function (err, resp) {
+        if (err) {
+            console.error(err);
+            error(err);
+            return;
+        }
+        let cookie = undefined;
+        if (resp.headers['set-cookie']) {
+            if (Array.isArray(resp.headers['set-cookie'])) {
+                resp.headers['set-cookie'].forEach(function (item) {
+                    if (item.includes("Wilma2MFASID=") && cookie === undefined)
+                        cookie = extractMFAToken(item);
+                });
+            } else if (resp.headers['set-cookie'].includes('Wilma2MFASID='))
+                cookie = extractMFAToken(resp.headers['set-cookie']);
+        }
+        response(resp.body, cookie);
+    });
+}
+
 function messages(session, serverUrl, error, response) {
     serverUrl = correctAddress(serverUrl);
-    needle.get(serverUrl+'messages/index_json', {cookies: {'Wilma2SID': session}}, function (err, resp) {
+    needle.get(serverUrl+'messages/index_json', {cookies: constructCorrectCookies(session)}, function (err, resp) {
         if (err) {
             console.error(err);
             error(err);
@@ -63,7 +112,7 @@ function messages(session, serverUrl, error, response) {
 
 function message(session, serverUrl, param, error, response) {
     serverUrl = correctAddress(serverUrl);
-    needle.get(serverUrl+'messages/index_json/'+param, {cookies: {'Wilma2SID': session}}, function (err, resp) {
+    needle.get(serverUrl+'messages/index_json/'+param, {cookies: constructCorrectCookies(session)}, function (err, resp) {
         if (err) {
             console.error(err);
             error(err);
@@ -76,7 +125,7 @@ function message(session, serverUrl, param, error, response) {
 function schedule(session, serverUrl, error, response) {
     serverUrl = correctAddress(serverUrl);
     let date = dateFormat(new Date(), 'dd.mm.yyyy');
-    needle.get(serverUrl+'schedule/index_json?date='+date, {cookies: {'Wilma2SID': session}}, function (err, resp) {
+    needle.get(serverUrl+'schedule/index_json?date='+date, {cookies: constructCorrectCookies(session)}, function (err, resp) {
         if (err) {
             console.error(err);
             error(err);
@@ -90,7 +139,7 @@ function schedule(session, serverUrl, error, response) {
 function scheduleWithDate(jsDate, session, serverUrl, error, response) {
     serverUrl = correctAddress(serverUrl);
     let date = dateFormat(jsDate, 'dd.mm.yyyy');
-    needle.get(serverUrl+'schedule/index_json?date='+date, {cookies: {'Wilma2SID': session}}, function (err, resp) {
+    needle.get(serverUrl+'schedule/index_json?date='+date, {cookies: constructCorrectCookies(session)}, function (err, resp) {
         if (err) {
             console.error(err);
             error(err);
@@ -112,5 +161,6 @@ module.exports = {
     schedule,
     scheduleWithDate,
     messages,
-    message
+    message,
+    applyOTP
 }

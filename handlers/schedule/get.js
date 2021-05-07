@@ -13,7 +13,7 @@ function schedule(req, res) {
                 resUtils.responseStatus(res, 400, false, {cause: 'server is too long!'});
                 return;
             }
-            if (session.length > 1024) {
+            if (session.length > 4096) {
                 resUtils.responseStatus(res, 400, false, {cause: 'session is too long!'});
                 return;
             }
