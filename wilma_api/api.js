@@ -63,8 +63,23 @@ function homepage(session, serverUrl, error, response) {
             error(err);
             return;
         }
-        response(resp.body);
+        let mfaCheck = checkForExpiredMFA(resp.body); response(mfaCheck ? mfaCheck : resp.body);
     });
+}
+
+function checkForExpiredMFA(body) {
+    if (body !== undefined && body.LoginResult === "mfa_required") {
+        return {
+            error: {
+                id: 'wilmaplus-web-mfa',
+                message: 'MFA is required for your account.',
+                description: 'You haven\'t completed MFA or the token expired. Please complete MFA Procedure.',
+                whatnext: '',
+                statuscode: 401
+            }
+        }
+    }
+    return undefined;
 }
 
 function extractMFAToken(cookie) {
@@ -106,7 +121,7 @@ function messages(session, serverUrl, error, response) {
             error(err);
             return;
         }
-        response(resp.body);
+        let mfaCheck = checkForExpiredMFA(resp.body); response(mfaCheck ? mfaCheck : resp.body);
     });
 }
 
@@ -118,7 +133,7 @@ function message(session, serverUrl, param, error, response) {
             error(err);
             return;
         }
-        response(resp.body);
+        let mfaCheck = checkForExpiredMFA(resp.body); response(mfaCheck ? mfaCheck : resp.body);
     });
 }
 
@@ -131,7 +146,7 @@ function schedule(session, serverUrl, error, response) {
             error(err);
             return;
         }
-        response(resp.body, date);
+        let mfaCheck = checkForExpiredMFA(resp.body); response(mfaCheck ? mfaCheck : resp.body);
     });
 }
 
@@ -145,7 +160,7 @@ function scheduleWithDate(jsDate, session, serverUrl, error, response) {
             error(err);
             return;
         }
-        response(resp.body, date);
+        let mfaCheck = checkForExpiredMFA(resp.body); response(mfaCheck ? mfaCheck : resp.body);
     });
 }
 
