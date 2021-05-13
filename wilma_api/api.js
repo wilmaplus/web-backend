@@ -160,7 +160,7 @@ function scheduleWithDate(jsDate, session, serverUrl, error, response) {
             error(err);
             return;
         }
-        let mfaCheck = checkForExpiredMFA(resp.body); response(mfaCheck ? mfaCheck : resp.body);
+        let mfaCheck = checkForExpiredMFA(resp.body); response(mfaCheck ? mfaCheck : resp.body, date);
     });
 }
 

@@ -137,10 +137,10 @@ function parse(date, schedule) {
     let currentDay = 0;
     let lastDay = 0;
     schedule.forEach(function (scheduleReservation) {
-        // If day changed, adding currentDay
+        // If day changed, updating currentDay
         if (scheduleReservation.Day > lastDay) {
             if (lastDay !== 0) {
-                currentDay++;
+                currentDay = scheduleReservation.Day-1;
             }
             lastDay = scheduleReservation.Day;
         }
