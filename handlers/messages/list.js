@@ -117,8 +117,76 @@ function get(req, res) {
     }
 }
 
+function postReply(req, res) {
+    try {
+        if (req.body.session && req.body.server && req.body.content) {
+            const session = req.body.session;
+            const server = req.body.server;
+            const content = req.body.content;
+            if (server.length > 255) {
+                resUtils.responseStatus(res, 400, false, {cause: 'server is too long!'});
+                return;
+            }
+            if (session.length > 1024) {
+                resUtils.responseStatus(res, 400, false, {cause: 'session is too long!'});
+                return;
+            }
+            if (content.length > 100000) {
+                resUtils.responseStatus(res, 400, false, {cause: 'content is too long!'});
+                return;
+            }
+            if (!validUrl.isWebUri(server)) {
+                resUtils.responseStatus(res, 400, false, {cause: 'server is invalid!'});
+                return;
+            }
+            wilmaApi.message(session, server, req.params.id, function (error, localization) {
+                if (localization)
+                    resUtils.responseStatus(res, 500, false, {cause: error.toString(), localization: localization});
+                else
+                    resUtils.responseStatus(res, 500, false, {cause: error.toString()});
+            }, function (response) {
+                if (response.error) {
+                    resUtils.responseStatus(res, 500, false, {cause: response.error.message, wilma: response.error});
+                    return;
+                }
+                if (response.messages && response.messages.length > 0) {
+                    let message = response.messages[0];
+                    if (message && message.AllowCollatedReply) {
+                        // proceed to reply
+                        wilmaApi.collatedReply(session, server, content, req.params.id, function (error, localization) {
+                            if (localization)
+                                resUtils.responseStatus(res, 500, false, {cause: error.toString(), localization: localization});
+                            else
+                                resUtils.responseStatus(res, 500, false, {cause: error.toString()});
+                        }, function (response) {
+                            if (response.error) {
+                                resUtils.responseStatus(res, 500, false, {cause: response.error.message, wilma: response.error});
+                                return;
+                            }
+                            if (response.messages && response.messages.length > 0) {
+                                resUtils.responseStatus(res, 200, true, {message: response.messages[0]});
+                            } else {
+                                resUtils.responseStatus(res, 404, false, {cause: 'Message not found', localization: 'msg_missing'});
+                            }
+                        })
+                    } else {
+                        resUtils.responseStatus(res, 404, false, {cause: 'Collated replying is not active for this message', localization: 'no_collated_reply'});
+                    }
+                } else {
+                    resUtils.responseStatus(res, 404, false, {cause: 'Message not found', localization: 'msg_missing'});
+                }
+            })
+        } else {
+            resUtils.responseStatus(res, 400, false, {cause: 'Required parameters are missing'});
+        }
+    } catch (e) {
+        resUtils.responseStatus(res, 500, false, {cause: e.toString()})
+    }
+}
+
 module.exports = {
     list,
     get,
-    folder
+    folder,
+    postReply
 }

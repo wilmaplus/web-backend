@@ -41,6 +41,9 @@ app.route('/api/v1/messages')
 app.route('/api/v1/messages/id/:id(\\d+)')
     .post(messages.get)
 
+app.route('/api/v1/messages/id/:id(\\d+)/reply')
+    .post(messages.postReply)
+
 app.route('/api/v1/messages/:folder([a-z]+)')
     .post(messages.folder)
 

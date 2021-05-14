@@ -137,6 +137,21 @@ function message(session, serverUrl, param, error, response) {
     });
 }
 
+function collatedReply(session, serverUrl, content, messageId, error, response) {
+    serverUrl = correctAddress(serverUrl);
+    homepage(session, serverUrl, hErr => {error(hErr)}, homepage => {
+        let msg = {bodytext: content, formkey: homepage.FormKey, wysiwyg: 'ckeditor', format:'json'};
+        needle.post(serverUrl+'messages/collatedreply/'+messageId+'?format=json', msg, {follow_max: 1, follow_set_cookies: true, cookies: constructCorrectCookies(session), json: false, content_type: 'application/x-www-form-urlencoded'}, function (err, resp) {
+            if (err) {
+                console.error(err);
+                error(err);
+                return;
+            }
+            let mfaCheck = checkForExpiredMFA(resp.body); response(mfaCheck ? mfaCheck : resp.body);
+        });
+    })
+}
+
 function schedule(session, serverUrl, error, response) {
     serverUrl = correctAddress(serverUrl);
     let date = dateFormat(new Date(), 'dd.mm.yyyy');
@@ -177,5 +192,6 @@ module.exports = {
     scheduleWithDate,
     messages,
     message,
-    applyOTP
+    applyOTP,
+    collatedReply
 }
