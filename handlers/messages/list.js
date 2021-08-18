@@ -1,6 +1,7 @@
 const resUtils = require("../../utils/response_utilities")
 const wilmaApi = require('../../wilma_api/api')
 const validUrl = require('valid-url');
+const {reworkMessageHTML} = require("../../utils/messages");
 
 function list(req, res) {
     try {
@@ -104,6 +105,13 @@ function get(req, res) {
                     return;
                 }
                 if (response.messages && response.messages.length > 0) {
+                    let message = response.messages[0];
+                    if (message && message.ContentHtml)
+                        message.ContentHtml = reworkMessageHTML(message.ContentHtml);
+                    if (message && message.ReplyList)
+                        for (const reply of message.ReplyList) {
+                            reply.ContentHtml = reworkMessageHTML(reply.ContentHtml);
+                        }
                     resUtils.responseStatus(res, 200, true, {message: response.messages[0]});
                 } else {
                     resUtils.responseStatus(res, 404, false, {cause: 'Message not found', localization: 'msg_missing'});
